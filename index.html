@@ -18,7 +18,7 @@
 		var CONFIG = {
 			ethAddress: '<Ethereum wallet address>',
 			apiKey: '<Etherscan API key>',
-			magnetBase: 'magnet:?dn=ChrisAllen.html&tr=udp%3A%2F%2Fexodus.desync.com%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.internetwarriors.net%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&xt=urn:btih:'
+			magnetBase: 'magnet:?dn=F0rkdNB0rkD.html&tr=udp%3A%2F%2Fexodus.desync.com%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.internetwarriors.net%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&xt=urn:btih:'
 		}
 
 		$(document).ready(function() {
@@ -28,7 +28,7 @@
 			// find the latest transaction with OP_RETURN
 			.then(function(data) {
 				if (data.status == "1") {
-					for (var i = 0; i < data.result.length; i++) {
+					for (var i = data.result.length-1; i >= 0; i--) {
 						console.log('checking tx from', data.result[i].from);
 						console.log(data.result[i].from,' === ', CONFIG.ethAddress,' ? ',data.result[i].from === CONFIG.ethAddress);
 						if (data.result[i].from === CONFIG.ethAddress) { // only read transaction sent from CONFIG.ethAddress
