@@ -16,49 +16,54 @@
 	<script>
 
 		var CONFIG = {
-			btcAddress: '1DhDyqB4xgDWjZzfbYGeutqdqBhSF7tGt4',
-			magnetBase: 'magnet:?dn=index.html&tr=udp%3A%2F%2Fexodus.desync.com%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.internetwarriors.net%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&tr=wss%3A%2F%2Ftracker.webtorrent.io&xt=urn:btih:'
+			ethAddress: '<Ethereum wallet address>',
+			apiKey: '<Etherscan API key>',
+			magnetBase: 'magnet:?dn=ChrisAllen.html&tr=udp%3A%2F%2Fexodus.desync.com%3A6969&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Ftracker.internetwarriors.net%3A1337&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.openbittorrent.com%3A80&tr=wss%3A%2F%2Ftracker.btorrent.xyz&tr=wss%3A%2F%2Ftracker.fastcast.nz&tr=wss%3A%2F%2Ftracker.openwebtorrent.com&xt=urn:btih:'
 		}
 
-
 		$(document).ready(function() {
-
 			// get transactions for given bitcoin address
-			$.get('https://blockexplorer.com/api/txs/?address=' + CONFIG.btcAddress)
+			$.get('http://api.etherscan.io/api?module=account&action=txlist&address=' + CONFIG.ethAddress + '&startblock=0&endblock=99999999&sort=asc&apikey=' + CONFIG.apiKey)
 
 			// find the latest transaction with OP_RETURN
 			.then(function(data) {
-				for (var i = 0; i < data.txs.length; i++) {
-					if (data.txs[i].vin.length > 0 && data.txs[i].vin[0].addr === CONFIG.btcAddress) { // only read transaction sent from CONFIG.btcAddress
-						for (var j = 0; j < data.txs[i].vout.length; j++) {
-							var scriptPubKey = data.txs[i].vout[j].scriptPubKey.asm
-							if (scriptPubKey.indexOf('OP_RETURN') !== -1) {
-
-								// extract webpage torrent info hash
-								return scriptPubKey.split(' ').slice(-1)[0];
+				if (data.status == "1") {
+					for (var i = 0; i < data.result.length; i++) {
+						console.log('checking tx from', data.result[i].from);
+						console.log(data.result[i].from,' === ', CONFIG.ethAddress,' ? ',data.result[i].from === CONFIG.ethAddress);
+						if (data.result[i].from === CONFIG.ethAddress) { // only read transaction sent from CONFIG.ethAddress
+							console.log('it\'s from me!');
+							input = data.result[i].input.substr(2); // ignore the leading "0x"
+							console.log('input is', input);
+							if (input.length > 0) {
+								console.log('found it!')
+								return input;
 							}
 						}
 					}
 				}
+				return 0;
 			})
 
 			// download webpage HTML via torrents
 			.then(function(torrentHash) {
 				console.log('using hash', torrentHash)
 
-				var magnet = CONFIG.magnetBase + torrentHash
-				var client = new WebTorrent()
+				if (torrentHash != 0) {
+					var magnet = CONFIG.magnetBase + torrentHash
+					var client = new WebTorrent()
 
-				client.add(magnet, function(torrent) {
-					var file = torrent.files[0]
-					file.getBuffer(function(err, buffer) {
+					client.add(magnet, function(torrent) {
+						var file = torrent.files[0]
+						file.getBuffer(function(err, buffer) {
 
-						// overwrite current page with new HTML
-						document.open()
-						document.write(buffer.toString())
-						document.close()
+							// overwrite current page with new HTML
+							document.open()
+							document.write(buffer.toString())
+							document.close()
+						})
 					})
-				})
+				}
 			})
 		})
 
